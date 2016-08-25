@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: datadir-ipfs-0
+  labels:
+    app: ipfs
+    petindex: "0"
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 100Mi
+  hostPath:
+    path: /tmp/k8s-data/ipfs-data-0
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: datadir-ipfs-1
+  labels:
+    app: ipfs
+    petindex: "1"
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 100Mi
+  hostPath:
+    path: /tmp/k8s-data/ipfs-data-1
