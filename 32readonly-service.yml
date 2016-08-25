@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: readonly
+  namespace: ipfs
+spec:
+  ports:
+  - port: 8080
+    name: readonly
+  selector:
+    app: ipfs
+  type: NodePort
