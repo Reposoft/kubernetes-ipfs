@@ -1,0 +1,15 @@
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipfs
+  labels:
+    app: ipfs
+spec:
+  ports:
+  - port: 4001
+    name: swarm
+  # *.ipfs.ipfs.svc.cluster.local
+  clusterIP: None
+  selector:
+    app: ipfs
