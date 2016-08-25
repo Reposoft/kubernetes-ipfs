@@ -9,6 +9,10 @@ spec:
   ports:
   - port: 4001
     name: swarm
+  - port: 5001
+    name: api
+  - port: 8080
+    name: readonly
   # *.ipfs.ipfs.svc.cluster.local
   clusterIP: None
   selector:
