@@ -17,10 +17,14 @@ spec:
     spec:
       containers:
       - name: ipfs
-        image: ipfs/go-ipfs
+        image: ipfs/go-ipfs:v0.4.3-rc3
         env:
         - name: IPFS_LOGGING
           value: debug
+        #bootstrap#args:
+        #bootstrap#- --offline
+        #command:
+        #- ipfs bootstrap rm --all
         ports:
         - containerPort: 4001
           name: swarm
