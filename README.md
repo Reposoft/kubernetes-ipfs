@@ -22,6 +22,7 @@ IP and port depends on your setup and the `type` you chose for services. Example
 ```
 $ ipfs_api=192.168.99.101:30115
 $ ipfs_ro=192.168.99.101:30715
+$ echo '{"test":1}' > test1
 $ curl -F "data=@./test1" http://$ipfs_api/api/v0/add
 {"Name":"test1","Hash":"QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq"}
 $ $ curl http://$ipfs_ro/ipfs/QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq
