@@ -1,0 +1,77 @@
+---
+kind: ConfigMap
+metadata:
+  name: test-ipfs-peers
+  namespace: default
+apiVersion: v1
+data:
+
+  setup.sh: |-
+    touch /tmp/testlog
+
+    tail -f /tmp/testlog
+
+  continue.sh: |-
+    set -e
+    set -x
+    NS=ipfs
+
+    kubectl -n $NS get pods -o jsonpath='{range .items[*]}{@.metadata.name}:{@.status.podIP},'
+
+    # checking only first pod...
+    i=0
+    ip=$(kubectl -n $NS get pod ipfs-$i -o jsonpath='{.status.podIP}')
+    ipfs_api=http://$ip:5001
+    curl -s $ipfs_api/api/v0/swarm/peers
+    # TODO count and verify that other pods' IPs are there
+
+    curl -s $ipfs_api/api/v0/pin/ls
+
+    exit 0
+
+  run.sh: |-
+    exit 0
+
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: test-ipfs-peers
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        test-target: kafka
+        test-type: readiness
+    spec:
+      containers:
+      - name: testcase
+        image: solsson/kafka-initutils@sha256:c98d7fb5e9365eab391a5dcd4230fc6e72caf929c60f29ff091e3b0215124713
+        # Test set up
+        command:
+        - /bin/bash
+        - -e
+        - /test/setup.sh
+        # Test run, again and again
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -e
+            - /test/run.sh
+        # Test quit on nonzero exit
+        livenessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -e
+            - /test/continue.sh
+        volumeMounts:
+        - name: config
+          mountPath: /test
+      volumes:
+      - name: config
+        configMap:
+          name: test-ipfs-peers
