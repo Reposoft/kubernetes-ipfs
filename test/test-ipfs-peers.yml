@@ -12,8 +12,6 @@ data:
     tail -f /tmp/testlog
 
   continue.sh: |-
-    set -e
-    set -x
     NS=ipfs
 
     kubectl -n $NS get pods -o jsonpath='{range .items[*]}{@.metadata.name}:{@.status.podIP},'
