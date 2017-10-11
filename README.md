@@ -5,44 +5,44 @@ Configures a small cluster-local ipfs swarm, with focus on [http API](https://gi
 
 A useful introduction, though with command line focus: https://medium.com/@ConsenSys/an-introduction-to-ipfs-9bba4860abd0.
 
-## Bootstrapping
+## Howto
 
-Optionally configure service `type` in the 3* yml:s, then do
-`kubectl create -f .`.
-
-### Bootstrap configuration
-
-We assume that you want to start out completely local, and only later participate in public ledgers.
-
-When you start the offical container (wihtout an `--offline` arg)
-it will use with the default public [bootstrap](https://ipfs.io/docs/commands/#ipfs-bootstrap) list.
-
-Instead you want [ipfs swarm peers](https://ipfs.io/docs/commands/#ipfs-swarm-peers) to be your local addresses:
-```
-$ kubectl exec ipfs-0 -- ipfs swarm peers
-/ip4/[cluster-local IP here]/tcp/4001/ipfs/...
-
-# with test content from below
-$ kubectl exec ipfs-0 -- ipfs cat QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq
-{"test":1}
-$ kubectl exec ipfs-1 -- ipfs cat QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq
-{"test":1}
+First [create a key for your private swarm](https://github.com/ipfs/go-ipfs/blob/v0.4.11/docs/experimental-features.md#private-networks) and upload using:
+```bash
+kubectl apply -f ./00namespace.yml
+kubectl -n ipfs create secret generic ipfs --from-file=./swarm.key
 ```
 
-This happens automatically and only locally if you clear the bootstrap list prior to first online daemon start.
-The bootstrap/swarm_local.sh script tries to do such a thing.
-With `debug` level logging you know that you're local if the amount of logs isn't too big for a human to follow.
+Then optionally configure service `type` in the 3* yml:s, then do
+`kubectl apply -f .`.
+
+### Check status of your swarm
+
+Peers (i.e. pods) find each other automagically.
+
+```bash
+kubectl -n ipfs get pods -o wide
+# Should include "/ip4/..." entries for the peers:
+kubectl -n ipfs exec ipfs-0 -- ipfs swarm peers
+```
 
 ### Ongoing investigation
 
-Remains to investigate this log output (notably on debug level):
+Remains to investigate this log output
+which repeats itself endlessly:
 ```
-04:09:25.525 DEBUG       core: <peer.ID RnHFxa> no more bootstrap peers to create 3 connections bootstrap.go:141
-04:09:25.525 DEBUG       core: <peer.ID RnHFxa> bootstrap error: not enough bootstrap peers to bootstrap bootstrap.go:87
-```
-and this, notably on warn level:
-```
-04:09:25.527 WARNI       core: trying peer info: {<peer.ID eSjMnW> [/ip4/172.17.0.5/tcp/4001]} core.go:201
+DEBUG       mdns: starting mdns query mdns.go:125
+DEBUG       mdns: Handling MDNS entry: 172.17.0.13:4001 QmTgXq7EM2jyArCPAPKsBwdjCmbVqnypXouCxSWQNzPTrP mdns.go:147
+WARNI       core: trying peer info: {<peer.ID TgXq7E> [/ip4/172.17.0.13/tcp/4001]} core.go:390
+DEBUG       mdns: Handling MDNS entry: 172.17.0.14:4001 QmXuE8WGu4pGNuUyz1bsMpwpZrShVDGpokSyWvCMuYCqNA mdns.go:147
+WARNI       core: trying peer info: {<peer.ID XuE8WG> [/ip4/172.17.0.14/tcp/4001]} core.go:390
+DEBUG       core: <peer.ID aoBGog> no more bootstrap peers to create 1 connections bootstrap.go:141
+DEBUG       core: <peer.ID aoBGog> bootstrap error: not enough bootstrap peers to bootstrap bootstrap.go:87
+DEBUG       mdns: Handling MDNS entry: 172.17.0.12:4001 QmUKJ7Fze9kWaxgZR7vUzZzWFgcrAi6AQ3ciX7iCMKw4fn mdns.go:147
+DEBUG       mdns: Handling MDNS entry: 172.17.0.10:4001 QmaoBGogYpHNBhnmpg5e6Hoerc45kdiwvgDEAk1wTrC1H2 mdns.go:147
+DEBUG       mdns: got our own mdns entry, skipping mdns.go:155
+WARNI       core: trying peer info: {<peer.ID UKJ7Fz> [/ip4/172.17.0.12/tcp/4001]} core.go:390
+DEBUG       mdns: mdns query complete mdns.go:138
 ```
 
 ## Persistence
@@ -66,7 +66,3 @@ curl -F "data=@./test1" $ipfs_api/api/v0/add
 curl $ipfs_ro/ipfs/QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq
 # {"test":1}
 ```
-
-## Remote clusters
-
-New in Kubernetes [1.3](http://blog.kubernetes.io/2016/07/kubernetes-1.3-bridging-cloud-native-and-enterprise-workloads.html). We should test that.

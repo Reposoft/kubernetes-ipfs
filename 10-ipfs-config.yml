@@ -45,6 +45,7 @@ data:
     set -e
     set -x
 
-    echo "Nothing here yet"
+    echo "Let's assume for now that pods will find each other,"
+    echo "i.e. no need for ipfs bootstrap (using podIPs from kube API calls)"
     exit 0
     
