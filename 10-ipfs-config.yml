@@ -1,0 +1,45 @@
+kind: ConfigMap
+metadata:
+  name: ipfs-config
+  namespace: ipfs
+apiVersion: v1
+data:
+  init.sh: |-
+    #!/bin/sh
+    set -e
+    set -x
+
+    # First start with current persistent volume
+    [ -f $IPFS_PATH/version ] || {
+      echo "No ipfs repo found in $IPFS_PATH. Initializing..."
+      sed 's/^exec ipfs daemon .*/echo "Repo init completed using container start script"/' /usr/local/bin/start_ipfs > /tmp/init_ipfs
+      chmod u+x /tmp/init_ipfs && /tmp/init_ipfs
+
+      echo "Removing all bootstrap nodes..."
+      echo "(see https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#private-networks)"
+      ipfs bootstrap rm --all
+    }
+
+    # Always check for secret
+    [ -f $IPFS_PATH/swarm.key ] || {
+      echo "No swarm.key found, copying from mounted secret"
+      [ -f /etc/ipfs-secrets/swarm.key ] || {
+        echo "No swarm.key found in ipfs secret, please see"
+        echo "https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#private-networks"
+        echo "Then upload secret using something like:"
+        echo "kubectl -n ipfs create secret generic ipfs --from-file=./swarm.key"
+        exit 1
+      }
+    }
+
+    exit 0
+
+
+  peers-kubernetes-refresh.sh: |-
+    #!/bin/sh
+    set -e
+    set -x
+
+    echo "Nothing here yet"
+    exit 0
+    
