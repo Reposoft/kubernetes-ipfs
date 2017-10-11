@@ -13,8 +13,16 @@ kubectl apply -f ./00namespace.yml
 kubectl -n ipfs create secret generic ipfs --from-file=./swarm.key
 ```
 
-Then optionally configure service `type` in the 3* yml:s, then do
-`kubectl apply -f .`.
+Optionally configure service `type` in the 3* yml:s, then do:
+```bash
+kubectl apply -f .`.
+```
+
+The logs can confirm that your swarm is private:
+```bash
+kubectl logs ipfs-0 | grep private
+# "Swarm is limited to private network of peers with the swarm key"
+```
 
 ### Check status of your swarm
 
