@@ -34,25 +34,6 @@ kubectl -n ipfs get pods -o wide
 kubectl -n ipfs exec ipfs-0 -- ipfs swarm peers
 ```
 
-### Ongoing investigation
-
-Remains to investigate this log output
-which repeats itself endlessly:
-```
-DEBUG       mdns: starting mdns query mdns.go:125
-DEBUG       mdns: Handling MDNS entry: 172.17.0.13:4001 QmTgXq7EM2jyArCPAPKsBwdjCmbVqnypXouCxSWQNzPTrP mdns.go:147
-WARNI       core: trying peer info: {<peer.ID TgXq7E> [/ip4/172.17.0.13/tcp/4001]} core.go:390
-DEBUG       mdns: Handling MDNS entry: 172.17.0.14:4001 QmXuE8WGu4pGNuUyz1bsMpwpZrShVDGpokSyWvCMuYCqNA mdns.go:147
-WARNI       core: trying peer info: {<peer.ID XuE8WG> [/ip4/172.17.0.14/tcp/4001]} core.go:390
-DEBUG       core: <peer.ID aoBGog> no more bootstrap peers to create 1 connections bootstrap.go:141
-DEBUG       core: <peer.ID aoBGog> bootstrap error: not enough bootstrap peers to bootstrap bootstrap.go:87
-DEBUG       mdns: Handling MDNS entry: 172.17.0.12:4001 QmUKJ7Fze9kWaxgZR7vUzZzWFgcrAi6AQ3ciX7iCMKw4fn mdns.go:147
-DEBUG       mdns: Handling MDNS entry: 172.17.0.10:4001 QmaoBGogYpHNBhnmpg5e6Hoerc45kdiwvgDEAk1wTrC1H2 mdns.go:147
-DEBUG       mdns: got our own mdns entry, skipping mdns.go:155
-WARNI       core: trying peer info: {<peer.ID UKJ7Fz> [/ip4/172.17.0.12/tcp/4001]} core.go:390
-DEBUG       mdns: mdns query complete mdns.go:138
-```
-
 ## Persistence
 
 Note that ipfs has no ambition to replicate all content across all nodes,
