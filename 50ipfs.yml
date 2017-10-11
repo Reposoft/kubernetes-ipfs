@@ -10,6 +10,10 @@ spec:
     metadata:
       labels:
         app: ipfs
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5001"
+        prometheus.io/path: "debug/metrics/prometheus"
     spec:
       initContainers:
       - name: init-repo
