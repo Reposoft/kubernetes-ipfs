@@ -23,7 +23,8 @@ data:
       ipfs bootstrap rm --all
 
       echo "Avoiding endless WARN log entries for MDNS"
-      ipfs config --bool Discovery.MDNS.Enabled false
+      ipfs config --bool Discovery.MDNS.Enabled true
+      ipfs config --json Discovery.MDNS.Interval 3600
     }
 
     # Always check for secret

@@ -5,7 +5,7 @@ metadata:
   namespace: ipfs
 spec:
   serviceName: ipfs
-  replicas: 4
+  replicas: 5
   template:
     metadata:
       labels:
