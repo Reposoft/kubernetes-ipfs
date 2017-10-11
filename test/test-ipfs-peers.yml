@@ -9,25 +9,25 @@ data:
   setup.sh: |-
     touch /tmp/testlog
 
+    npm install --ignore-scripts \
+      mocha@4.0.1 \
+      chai@4.1.2 \
+      kubernetes-client@3.16.0 \
+      ipfs-mini@1.1.2 >> /tmp/testlog 2>&1
+    # not using https://www.npmjs.com/package/ipfs-api because it fails to install due to lack of git executable
+
     tail -f /tmp/testlog
 
+  test-swarm-peers.js: |-
+
+    const print = (err, result) => console.log(JSON.stringify(err || result, null, 2));
+
+    const K8Api = require('kubernetes-client');
+    const k8 = new K8Api.Core(K8Api.config.getInCluster());
+
+    k8.ns('ipfs').services('api').get(print);
+
   continue.sh: |-
-    NS=ipfs
-
-    kubectl -n $NS get pods -o jsonpath='{range .items[*]}{@.metadata.name}:{@.status.podIP},'
-
-    # checking only first pod...
-    i=0
-    ip=$(kubectl -n $NS get pod ipfs-$i -o jsonpath='{.status.podIP}')
-    ipfs_api=http://$ip:5001
-    curl -s $ipfs_api/api/v0/swarm/peers
-    # TODO count and verify that other pods' IPs are there
-
-    curl -s $ipfs_api/api/v0/pin/ls
-
-    exit 0
-
-  run.sh: |-
     exit 0
 
 ---
@@ -46,7 +46,10 @@ spec:
     spec:
       containers:
       - name: testcase
-        image: solsson/kafka-initutils@sha256:c98d7fb5e9365eab391a5dcd4230fc6e72caf929c60f29ff091e3b0215124713
+        #image: solsson/kafka-initutils@sha256:c98d7fb5e9365eab391a5dcd4230fc6e72caf929c60f29ff091e3b0215124713
+        #image: node:8.6.0-alpine@sha256:60cd58a7a2bd9fec161f53f8886e451f92db06b91f4f72d9188eeea040d195eb
+        image: yolean/node@sha256:2ff7743b00a5f1b2f9ca1ad426a081b663783f932461367e9db25155113ea135
+        workingDir: /
         # Test set up
         command:
         - /bin/bash
@@ -56,9 +59,7 @@ spec:
         readinessProbe:
           exec:
             command:
-            - /bin/bash
-            - -e
-            - /test/run.sh
+            - ./node_modules/.bin/mocha
         # Test quit on nonzero exit
         livenessProbe:
           exec:
