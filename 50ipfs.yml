@@ -5,22 +5,45 @@ metadata:
   namespace: ipfs
 spec:
   serviceName: ipfs
-  replicas: 2
+  replicas: 4
   template:
     metadata:
       labels:
         app: ipfs
     spec:
+      initContainers:
+      - name: init-repo
+        image: ipfs/go-ipfs:v0.4.11@sha256:e977e1560b960933061efc694c937d711ce1a51aa4a5239acfdff01504b11054
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        command: ['/bin/sh', '/etc/ipfs-config/init.sh']
+        volumeMounts:
+        - name: data
+          mountPath: /data/ipfs
+        - name: secrets
+          mountPath: /etc/ipfs-secrets
+        - name: config
+          mountPath: /etc/ipfs-config
+      - name: init-peers
+        image: ipfs/go-ipfs:v0.4.11@sha256:e977e1560b960933061efc694c937d711ce1a51aa4a5239acfdff01504b11054
+        command: ['/bin/sh', '/etc/ipfs-config/peers-kubernetes-refresh.sh']
+        volumeMounts:
+        - name: data
+          mountPath: /data/ipfs
+        - name: config
+          mountPath: /etc/ipfs-config
       containers:
       - name: ipfs
         image: ipfs/go-ipfs:v0.4.11@sha256:e977e1560b960933061efc694c937d711ce1a51aa4a5239acfdff01504b11054
         env:
         - name: IPFS_LOGGING
           value: debug
-        #bootstrap#args:
-        #bootstrap#- --offline
-        #command:
-        #- ipfs bootstrap rm --all
+        command:
+        - ipfs
+        - daemon
         ports:
         - containerPort: 4001
           name: swarm
@@ -31,6 +54,13 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data/ipfs
+      volumes:
+      - name: secrets
+        secret:
+          secretName: ipfs
+      - name: config
+        configMap:
+          name: ipfs-config
   volumeClaimTemplates:
   - metadata:
       name: data

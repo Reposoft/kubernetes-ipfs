@@ -1,0 +1,51 @@
+kind: ConfigMap
+metadata:
+  name: ipfs-config
+  namespace: ipfs
+apiVersion: v1
+data:
+  init.sh: |-
+    #!/bin/sh
+    set -e
+    set -x
+
+    # First start with current persistent volume
+    [ -f $IPFS_PATH/version ] || {
+      echo "No ipfs repo found in $IPFS_PATH. Initializing..."
+      # Replaces the entrypoint script https://github.com/ipfs/go-ipfs/blob/master/bin/container_daemon
+      # but without the su-exec stuff that gets denied in k8s
+      ipfs init
+      ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001
+      ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/8080
+
+      echo "Removing all bootstrap nodes..."
+      echo "(see https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#private-networks)"
+      ipfs bootstrap rm --all
+    }
+
+    # Always check for secret
+    [ -f $IPFS_PATH/swarm.key ] || {
+      echo "No swarm.key found, copying from mounted secret"
+      [ -f /etc/ipfs-secrets/swarm.key ] || {
+        echo "No swarm.key found in ipfs secret, please see"
+        echo "https://github.com/ipfs/go-ipfs/blob/v0.4.11/docs/experimental-features.md#private-networks"
+        echo "Then upload secret using something like:"
+        echo "kubectl -n ipfs create secret generic ipfs --from-file=./swarm.key"
+        exit 1
+      }
+      cp -v /etc/ipfs-secrets/swarm.key $IPFS_PATH/swarm.key
+      chmod 600 $IPFS_PATH/swarm.key
+    }
+
+    exit 0
+
+
+  peers-kubernetes-refresh.sh: |-
+    #!/bin/sh
+    set -e
+    set -x
+
+    echo "Let's assume for now that pods will find each other,"
+    echo "i.e. no need for ipfs bootstrap (using podIPs from kube API calls)"
+    exit 0
+    
