@@ -7,16 +7,8 @@ A useful introduction, though with command line focus: https://medium.com/@Conse
 
 ## Bootstrapping
 
-Our kubernetes conventions use "bootstrap" as a term for initiating a persistent service.
-Pardon the confusion, when bootstrap is something else in ipfs.
-
-Depending on your choice of cluster you might want to create PersistentVolume and PersistentVolumeClaim before proceeding.
-
-Then optionally configure service `type` in the 3* yml:s and do
+Optionally configure service `type` in the 3* yml:s, then do
 `kubectl create -f .`.
-
-If pod logs `Error: failure writing to dagstore: fsync: invalid argument` you're probably on an incompatible file system, like NFS or VirtualBox shared foler.
-With minikube `kubectl create -f ./bootstrap/pv-template.yml` will get you a temp dir that ipfs is ok with if you run `sudo chown -R 1000 /tmp/k8s-data/ipfs-data-0` in `minikube ssh`.
 
 ### Bootstrap configuration
 
@@ -58,18 +50,21 @@ and this, notably on warn level:
 Note that ipfs has no ambition to replicate all content across all nodes,
 as that would be very impractical for next generation internet :)
 
+TODO is distributed [pin](https://www.reddit.com/r/ipfs/comments/69l1y8/does_ipfs_add_automatically_pin/),
+like in [ipfs-cluster](https://github.com/ipfs/ipfs-cluster) (which reinvents too much of Kubernetes for our taste).
+
 ## Testing
 
 IP and port depends on your setup and the `type` you chose for services. Example with minikube NodePort and the random ports from `kubectl create -f 3[service].yml`:
 
-```
-$ ipfs_api=192.168.99.101:30115
-$ ipfs_ro=192.168.99.101:30715
-$ echo '{"test":1}' > test1
-$ curl -F "data=@./test1" http://$ipfs_api/api/v0/add
-{"Name":"test1","Hash":"QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq"}
-$ curl http://$ipfs_ro/ipfs/QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq
-{"test":1}
+```bash
+ipfs_api=$(minikube service -n ipfs --url api)
+ipfs_ro=$(minikube service -n ipfs --url readonly)
+echo '{"test":1}' > test1
+curl -F "data=@./test1" $ipfs_api/api/v0/add
+# {"Name":"test1","Hash":"QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq"}
+curl $ipfs_ro/ipfs/QmSUFD7V8MfmLYEHWw9phnGEFhrjuYxGTgzEtMJuNoB6Jq
+# {"test":1}
 ```
 
 ## Remote clusters
