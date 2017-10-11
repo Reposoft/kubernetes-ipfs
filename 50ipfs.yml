@@ -33,16 +33,17 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data/ipfs
+        - name: config
+          mountPath: /etc/ipfs-config
       containers:
       - name: ipfs
         image: ipfs/go-ipfs:v0.4.11@sha256:e977e1560b960933061efc694c937d711ce1a51aa4a5239acfdff01504b11054
         env:
         - name: IPFS_LOGGING
           value: debug
-        #bootstrap#args:
-        #bootstrap#- --offline
-        #command:
-        #- ipfs bootstrap rm --all
+        command:
+        - ipfs
+        - daemon
         ports:
         - containerPort: 4001
           name: swarm

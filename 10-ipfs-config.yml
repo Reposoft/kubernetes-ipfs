@@ -12,8 +12,11 @@ data:
     # First start with current persistent volume
     [ -f $IPFS_PATH/version ] || {
       echo "No ipfs repo found in $IPFS_PATH. Initializing..."
-      sed 's/^exec ipfs daemon .*/echo "Repo init completed using container start script"/' /usr/local/bin/start_ipfs > /tmp/init_ipfs
-      chmod u+x /tmp/init_ipfs && /tmp/init_ipfs
+      # Replaces the entrypoint script https://github.com/ipfs/go-ipfs/blob/master/bin/container_daemon
+      # but without the su-exec stuff that gets denied in k8s
+      ipfs init
+      ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001
+      ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/8080
 
       echo "Removing all bootstrap nodes..."
       echo "(see https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#private-networks)"
@@ -25,11 +28,13 @@ data:
       echo "No swarm.key found, copying from mounted secret"
       [ -f /etc/ipfs-secrets/swarm.key ] || {
         echo "No swarm.key found in ipfs secret, please see"
-        echo "https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#private-networks"
+        echo "https://github.com/ipfs/go-ipfs/blob/v0.4.11/docs/experimental-features.md#private-networks"
         echo "Then upload secret using something like:"
         echo "kubectl -n ipfs create secret generic ipfs --from-file=./swarm.key"
         exit 1
       }
+      cp -v /etc/ipfs-secrets/swarm.key $IPFS_PATH/swarm.key
+      chmod 600 $IPFS_PATH/swarm.key
     }
 
     exit 0
