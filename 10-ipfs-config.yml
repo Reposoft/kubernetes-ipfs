@@ -21,6 +21,10 @@ data:
       echo "Removing all bootstrap nodes..."
       echo "(see https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#private-networks)"
       ipfs bootstrap rm --all
+
+      echo "Avoiding endless WARN log entries for MDNS"
+      ipfs config --bool Discovery.MDNS.Enabled true
+      ipfs config --json Discovery.MDNS.Interval 3600
     }
 
     # Always check for secret
