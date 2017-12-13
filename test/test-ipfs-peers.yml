@@ -48,7 +48,7 @@ spec:
       - name: testcase
         #image: solsson/kafka-initutils@sha256:c98d7fb5e9365eab391a5dcd4230fc6e72caf929c60f29ff091e3b0215124713
         #image: node:8.6.0-alpine@sha256:60cd58a7a2bd9fec161f53f8886e451f92db06b91f4f72d9188eeea040d195eb
-        image: yolean/node@sha256:2ff7743b00a5f1b2f9ca1ad426a081b663783f932461367e9db25155113ea135
+        image: yolean/node@sha256:230b269710a1d09b9ebbdeeea0fc4e69ac1388ab71b0178452e817065f69c700
         workingDir: /
         # Test set up
         command:
